@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
+import LogoutButton from '~/Components/LogoutButton'
 import CampusMap from '~/Components/CampusMap';
 
 interface Building {
@@ -8,6 +10,7 @@ interface Building {
   longitude: number;
   description?: string;
   building_code?: string;
+  address?: string;
 }
 
 interface Meeting {
@@ -127,11 +130,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  };
+
 
   const handleBuildingClick = (building: Building) => {
     setSelectedBuilding(building);
@@ -150,8 +149,17 @@ export default function Dashboard() {
   };
 
   const goToCourseBuilding = (course: Course) => {
-    const b = findBuildingForCourse(course);
-    if (b) setSelectedBuilding(b);
+    const building = findBuildingForCourse(course);
+    if (building) {
+      setSelectedBuilding(building);
+      // Smooth scroll to map section so the user sees the pin
+      setTimeout(() => {
+        const el = document.getElementById('map-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 0);
+    }
   };
 
   const todayKey = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
@@ -164,6 +172,16 @@ export default function Dashboard() {
       .filter(m => Array.isArray(m.days) && m.days.includes(todayKey))
       .map(m => ({ course, meeting: m }))
   ).sort((a, b) => parseTime(a.meeting.startTime) - parseTime(b.meeting.startTime));
+
+  // Progressive intensity backgrounds for classes (later items get darker)
+  const intensityClasses = [
+    'bg-indigo-500/10',
+    'bg-indigo-500/20',
+    'bg-indigo-500/30',
+    'bg-indigo-500/40',
+    'bg-indigo-500/50',
+    'bg-indigo-500/60',
+  ];
 
   // Filter buildings based on search only
   const filteredBuildings = buildings.filter(building => {
@@ -215,13 +233,18 @@ export default function Dashboard() {
               CampusNav
             </span>
             <span className="text-sm text-gray-400 hidden md:block">Dashboard</span>
+
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105 font-semibold"
+          <div className='flex item-center space-x-r gap-3'>
+          <Link
+          to="/schedule"
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105 font-semibold"
           >
-            Logout
-          </button>
+            Schedule
+          </Link>
+         <LogoutButton/>
+
+          </div>
         </div>
       </header>
 
@@ -310,11 +333,37 @@ export default function Dashboard() {
               <ul className="divide-y divide-white/10">
                 {todaysMeetings.map(({ course, meeting }, idx) => {
                   const b = findBuildingForCourse(course);
+                  const currentTime = new Date();
+                  const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+                  const meetingStartMinutes = parseTime(meeting.startTime);
+                  const meetingEndMinutes = parseTime(meeting.endTime);
+                  const intensityClass = intensityClasses[Math.min(idx, intensityClasses.length - 1)];
+                  
+                  // Check if this is the next class (current time is before start time)
+                  const isNextClass = meetingStartMinutes > currentMinutes;
+                  // Check if this is the current class (current time is between start and end)
+                  const isCurrentClass = currentMinutes >= meetingStartMinutes && currentMinutes <= meetingEndMinutes;
+                  
                   return (
-                    <li key={`${course.id}-${meeting.id}`} className="py-2 flex items-center justify-between">
+                    <li 
+                      key={`${course.id}-${meeting.id}`} 
+                      className={`py-2 flex items-center justify-between rounded-lg px-3 my-1 ${intensityClass} ${
+                        (isNextClass || isCurrentClass)
+                          ? 'bg-gradient-to-r from-orange-600/20 to-orange-700/20 border border-orange-500/30'
+                          : 'border border-white/10'
+                      }`}
+                    >
                       <div>
-                        <div className="text-white text-sm md:text-base font-medium">{course.title}</div>
-                        <div className="text-xs text-gray-400">
+                        <div className={`text-sm md:text-base font-medium ${
+                          isNextClass || isCurrentClass ? 'text-orange-200' : 'text-white'
+                        }`}>
+                          {course.title}
+                          {isNextClass && <span className="ml-2 text-xs bg-orange-600 text-white px-2 py-1 rounded-full">NEXT</span>}
+                          {isCurrentClass && <span className="ml-2 text-xs bg-orange-500 text-white px-2 py-1 rounded-full">NOW</span>}
+                        </div>
+                        <div className={`text-xs ${
+                          isNextClass || isCurrentClass ? 'text-orange-300' : 'text-gray-400'
+                        }`}>
                           {meeting.startTime} - {meeting.endTime}
                           {b ? ` • ${b.building_code || b.name}` : course.buildingCode ? ` • ${course.buildingCode}` : ''}
                         </div>
@@ -322,10 +371,32 @@ export default function Dashboard() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => goToCourseBuilding(course)}
-                          className="text-xs text-blue-300 hover:text-blue-200 underline"
+                          className="bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm"
                         >
                           Go
                         </button>
+                        {b && (
+                          <>
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(b.address ? `${b.name}, ${b.address}` : `${b.name}, St. Cloud State University, St. Cloud, MN`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 px-3 py-2 rounded-xl transition-all duration-200 text-xs"
+                              aria-label="Open in Google Maps"
+                            >
+                              Google
+                            </a>
+                            <a
+                              href={`https://maps.apple.com/?daddr=${encodeURIComponent(b.address ? `${b.name}, ${b.address}` : `${b.name}, St. Cloud State University, St. Cloud, MN`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 px-3 py-2 rounded-xl transition-all duration-200 text-xs"
+                              aria-label="Open in Apple Maps"
+                            >
+                              Apple
+                            </a>
+                          </>
+                        )}
                       </div>
                     </li>
                   );
@@ -335,7 +406,7 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive Map Section */}
-          <div className="bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 md:p-8 shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 mb-6 md:mb-8">
+          <div id="map-section" className="bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 md:p-8 shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 mb-6 md:mb-8">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6">
               <h2 className="text-lg md:text-2xl font-semibold text-purple-300 text-center md:text-left">
                 🗺️ Interactive Campus Map

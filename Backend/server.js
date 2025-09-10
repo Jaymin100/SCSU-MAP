@@ -3,7 +3,18 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
-require('dotenv').config();
+const path = require('path');
+
+// Debug dotenv loading
+console.log('Current working directory:', process.cwd());
+console.log('Looking for .env file at:', path.join(process.cwd(), '.env'));
+
+const result = require('dotenv').config();
+if (result.error) {
+  console.error('Error loading .env file:', result.error);
+} else {
+  console.log('Environment variables loaded successfully');
+}
 
 const app = express(); // This is what creates our expresss application 
 const PORT = process.env.PORT || 3001; //sets the port we will run this on
@@ -13,12 +24,20 @@ app.use(cors()); // tells server too allow requests from other websites ie my ap
 app.use(express.json()); // this tells my server to understand json datat when it sends data check os ee what that means
 
 // Database connection
+console.log('Environment variables:', {
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD ? '***' : 'undefined',
+  port: process.env.DB_PORT
+});
+
 const pool = new Pool({ 
-  user: process.env.DB_USER ,
-  host: process.env.DB_HOST ,
-  database: process.env.DB_NAME ,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  port: parseInt(process.env.DB_PORT) || 5432,
 });
 
 // Test database connection

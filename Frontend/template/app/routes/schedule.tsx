@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
+import LogoutButton from "~/Components/LogoutButton";
 type Building = {
   id: number;
   name: string;
@@ -76,6 +76,40 @@ export default function Schedule() {
       }
     })();
   }, []);
+  useEffect(() => {
+  (async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return; // stay with localStorage if not logged in
+
+      const res = await fetch('http://localhost:3001/api/schedule', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch schedule');
+      const data = await res.json();
+
+      if (Array.isArray(data.courses) && data.courses.length > 0) {
+        const normalized = data.courses.map((c: any) => ({
+          id: String(c.id),
+          title: c.title || '',
+          buildingId: c.buildingId ?? undefined,
+          buildingCode: c.buildingCode ?? undefined,
+          meetings: (c.meetings || []).map((m: any) => ({
+            id: String(m.id ?? crypto.randomUUID()),
+            days: Array.isArray(m.days) ? m.days : [],
+            startTime: typeof m.startTime === 'string' ? m.startTime : '',
+            endTime: typeof m.endTime === 'string' ? m.endTime : '',
+          })),
+        }));
+        setCourses(normalized);
+      }
+    } catch (e) {
+      // keep localStorage data on error
+      console.warn('Schedule fetch failed:', e);
+    }
+  })();
+}, []);
 
   const buildingIdToCode = useMemo(() => {
     const map = new Map<number, string>();
@@ -173,9 +207,27 @@ export default function Schedule() {
   const saveSchedule = async () => {
     setSaving(true);
     try {
-      // Placeholder: local-only for now. Hook your backend here if needed.
-      await new Promise((r) => setTimeout(r, 400));
-    } finally {
+      const token = localStorage.getItem('token');
+      if(!token){
+        throw new Error("No Auth token found");
+      }
+      const response = await fetch("http://localhost:3001/api/schedule",{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization' : `Bearer ${token}`
+        },
+        body: JSON.stringify({courses: courses})
+      });
+      if(!response.ok){
+        const errorData = await response.json();
+        throw new Error(errorData.error || "failed to save")
+      }
+      alert("saved correctly");
+    } catch(error){
+      console.error("error saving schedule",error);
+      alert(`Failed to save schedule: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally{
       setSaving(false);
     }
   };
@@ -198,12 +250,17 @@ export default function Schedule() {
             </span>
             <span className="text-sm text-gray-400 hidden md:block">Schedule</span>
           </div>
+          <div className="flex justify-center gap-3">
+
           <a
             href="/dashboard"
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105 font-semibold"
           >
             Dashboard
           </a>
+          <LogoutButton/>
+
+          </div>
         </div>
       </header>
 
