@@ -16,6 +16,15 @@ if (result.error) {
   console.log('Environment variables loaded successfully');
 }
 
+// Debug Railway environment variables
+console.log('=== RAILWAY ENVIRONMENT VARIABLES DEBUG ===');
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('DATABASE_URL value:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('=== END DEBUG ===');
+
 const app = express(); // This is what creates our expresss application 
 const PORT = process.env.PORT || 3001; //sets the port we will run this on
 
