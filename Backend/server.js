@@ -38,6 +38,14 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT) || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? {
+    rejectUnauthorized: false // Required for Supabase
+  } : false,
+  // Force IPv4 connection to avoid IPv6 issues
+  family: 4,
+  // Additional connection options
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 });
 
 // Test database connection
