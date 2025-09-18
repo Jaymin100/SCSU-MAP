@@ -5,10 +5,5 @@
   "framework": "react-router",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
-  ],
-  "functions": {
-    "build/server/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
