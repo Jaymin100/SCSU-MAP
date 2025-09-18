@@ -77,38 +77,38 @@ export default function Schedule() {
     })();
   }, []);
   useEffect(() => {
-  (async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return; // stay with localStorage if not logged in
+    (async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return; // stay with localStorage if not logged in
 
-      const res = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/schedule', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        const res = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/schedule', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-      if (!res.ok) throw new Error('Failed to fetch schedule');
-      const data = await res.json();
+        if (!res.ok) throw new Error('Failed to fetch schedule');
+        const data = await res.json();
 
-      if (Array.isArray(data.courses) && data.courses.length > 0) {
-        const normalized = data.courses.map((c: any) => ({
-          id: String(c.id),
-          title: c.title || '',
-          buildingId: c.buildingId ?? undefined,
-          buildingCode: c.buildingCode ?? undefined,
-          meetings: (c.meetings || []).map((m: any) => ({
-            id: String(m.id ?? crypto.randomUUID()),
-            days: Array.isArray(m.days) ? m.days : [],
-            startTime: typeof m.startTime === 'string' ? m.startTime : '',
-            endTime: typeof m.endTime === 'string' ? m.endTime : '',
-          })),
-        }));
-        setCourses(normalized);
+        if (Array.isArray(data.courses) && data.courses.length > 0) {
+          const normalized = data.courses.map((c: any) => ({
+            id: String(c.id),
+            title: c.title || '',
+            buildingId: c.buildingId ?? undefined,
+            buildingCode: c.buildingCode ?? undefined,
+            meetings: (c.meetings || []).map((m: any) => ({
+              id: String(m.id ?? crypto.randomUUID()),
+              days: Array.isArray(m.days) ? m.days : [],
+              startTime: typeof m.startTime === 'string' ? m.startTime : '',
+              endTime: typeof m.endTime === 'string' ? m.endTime : '',
+            })),
+          }));
+          setCourses(normalized);
+        }
+      } catch (e) {
+        // keep localStorage data on error
+        console.warn('Schedule fetch failed:', e);
       }
-    } catch (e) {
-      // keep localStorage data on error
-      console.warn('Schedule fetch failed:', e);
-    }
-  })();
+    })();
 }, []);
 
   const buildingIdToCode = useMemo(() => {
