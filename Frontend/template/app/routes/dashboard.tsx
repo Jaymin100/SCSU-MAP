@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   const fetchBuildings = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/buildings', {
+      const response = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/buildings', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
   const fetchSchedule = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/schedule', {
+      const response = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/schedule', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

@@ -29,7 +29,7 @@ export default function LoginModal({
     if (!email.endsWith("@go.minnstate.edu")) setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/login", {
+      const response = await fetch("https://gleaming-mindfulness-production.up.railway.app/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body : JSON.stringify({

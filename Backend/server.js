@@ -16,6 +16,15 @@ if (result.error) {
   console.log('Environment variables loaded successfully');
 }
 
+// Debug Railway environment variables
+console.log('=== RAILWAY ENVIRONMENT VARIABLES DEBUG ===');
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('DATABASE_URL value:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('=== END DEBUG ===');
+
 const app = express(); // This is what creates our expresss application 
 const PORT = process.env.PORT || 3001; //sets the port we will run this on
 
@@ -33,11 +42,17 @@ console.log('Environment variables:', {
 });
 
 // Database connection configuration
+console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? 'YES' : 'NO');
+
 const dbConfig = process.env.DATABASE_URL ? {
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Force IPv4 and add connection options
+  family: 4,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 } : {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
