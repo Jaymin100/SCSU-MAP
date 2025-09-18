@@ -42,11 +42,17 @@ console.log('Environment variables:', {
 });
 
 // Database connection configuration
+console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? 'YES' : 'NO');
+
 const dbConfig = process.env.DATABASE_URL ? {
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  // Force IPv4 and add connection options
+  family: 4,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 } : {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
