@@ -33,6 +33,8 @@ console.log('Environment variables:', {
 });
 
 const pool = new Pool({ 
+  // Use connection string if available, otherwise use individual parameters
+  connectionString: process.env.DATABASE_URL,
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
