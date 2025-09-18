@@ -2,5 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build/client",
   "installCommand": "npm install",
-  "framework": "vite"
+  "framework": "react-router",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "functions": {
+    "build/server/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
