@@ -31,7 +31,7 @@ export default function RegisterModal({
       setLoading(true);
       setError('');
 
-      const response = await fetch('http://localhost:3001/api/register', {
+      const response = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -61,7 +61,7 @@ export default function Schedule() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/buildings", {
+        const response = await fetch("https://gleaming-mindfulness-production.up.railway.app/api/buildings", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -82,7 +82,7 @@ export default function Schedule() {
       const token = localStorage.getItem('token');
       if (!token) return; // stay with localStorage if not logged in
 
-      const res = await fetch('http://localhost:3001/api/schedule', {
+      const res = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/schedule', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -211,7 +211,7 @@ export default function Schedule() {
       if(!token){
         throw new Error("No Auth token found");
       }
-      const response = await fetch("http://localhost:3001/api/schedule",{
+      const response = await fetch("https://gleaming-mindfulness-production.up.railway.app/api/schedule",{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
