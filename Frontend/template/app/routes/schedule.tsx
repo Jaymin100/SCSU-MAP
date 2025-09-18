@@ -82,9 +82,6 @@ export default function Schedule() {
         const token = localStorage.getItem('token');
         if (!token) return; // stay with localStorage if not logged in
 
-        const res = await fetch('https://gleaming-mindfulness-production.up.railway.app/api/schedule', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
 
         if (!res.ok) throw new Error('Failed to fetch schedule');
         const data = await res.json();
